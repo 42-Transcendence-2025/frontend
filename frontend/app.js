@@ -1,5 +1,5 @@
-import HomeView from "./scripts/homeCtrl.js";
-import TestView from "./scripts/testCtrl.js";
+import HomeController from "./src/controllers/homeCtrl.js";
+import TestController from "./src/controllers/testCtrl.js";
 
 //-----------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ const APP_CONTAINER_ID = "app";
 		if (!hashName) {
 			hashName = 'home';
 		}
-		var viewFile = `/views/${hashName}.html`;
+		var viewFile = `/src/views/${hashName}.html`;
 
 		const view = await fetchText(viewFile);
 
@@ -71,9 +71,9 @@ const APP_CONTAINER_ID = "app";
 		}
 		switch (hashName){
 			case 'home':
-				return new HomeView();
+				return new HomeController();
 			case 'test':
-				return new TestView();
+				return new TestController();
 			default:
 				return null;
 		}
@@ -96,7 +96,6 @@ const APP_CONTAINER_ID = "app";
 				$el.addClass(`active`)
 			}
 		})
-
 	};
 
 	window.onload = function () {
