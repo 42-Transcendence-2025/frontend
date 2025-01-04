@@ -37,10 +37,10 @@ const APP_CONTAINER_ID = "app";
 
 //-----------------------------------------------------------------------------
 
-(function () {
+(async function () {
 	// I18N setup & load
 	// $.i18n.debug = true;
-	$.i18n().load(LOCALE_URLS);
+	await $.i18n().load(LOCALE_URLS);
 
 	function setLocale(locale="en"){
 		if (!Object.keys(LOCALE_URLS).includes(locale)) {
@@ -51,7 +51,9 @@ const APP_CONTAINER_ID = "app";
 		localStorage.setItem(LOCAL_STORAGE_KEYS.locale, locale);
 		$(document.body).i18n();
 		const img = $(`#${LOCALE_SWITCH_ID} .selected-flag-img`);
-		img.attr("src", LOCALE_IMAGES[locale]);
+		if (img.attr("src") != LOCALE_IMAGES[locale]){
+			img.attr("src", LOCALE_IMAGES[locale]);
+		}
 		img.removeClass("d-none");
 	}
 	let savedLocale = localStorage.getItem(LOCAL_STORAGE_KEYS.locale);
