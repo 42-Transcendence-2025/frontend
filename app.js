@@ -13,11 +13,54 @@ import TestController from "./src/controllers/testCtrl.js";
  */
 
 //-----------------------------------------------------------------------------
+// GLOBAL VARIABLES
+
+var LOCAL_STORAGE_KEYS = {
+	locale: "locale",
+};
+
+const LOCALE_URLS = {
+	en:"i18n/en.json",
+	it:"i18n/it.json",
+	uk:"i18n/uk.json",
+};
+const LOCALE_IMAGES = {
+	en: "assets/flags/us.png",
+	it: "assets/flags/it.png",
+	uk: "assets/flags/ua.png",
+}
+const LOCALE_SWITCH_ID = "locale-switch";
+
 
 const APP_BASE_TITLE = "Pong Game";
 const APP_CONTAINER_ID = "app";
 
+//-----------------------------------------------------------------------------
+
 (function () {
+	// I18N setup & load
+	// $.i18n.debug = true;
+	$.i18n().load(LOCALE_URLS);
+
+	function setLocale(locale="en"){
+		if (!Object.keys(LOCALE_URLS).includes(locale)) {
+			console.error("Unknown locale: " + locale);
+			locale = "en";
+		}
+		$.i18n().locale = locale;
+		localStorage.setItem(LOCAL_STORAGE_KEYS.locale, locale);
+		$(document.body).i18n();
+		const img = $(`#${LOCALE_SWITCH_ID} .selected-flag-img`);
+		img.attr("src", LOCALE_IMAGES[locale]);
+		img.removeClass("d-none");
+	}
+	let savedLocale = localStorage.getItem(LOCAL_STORAGE_KEYS.locale);
+	setLocale(savedLocale);
+
+	$(`#${LOCALE_SWITCH_ID} .lang-item`).on("click", (el) => {
+		const $el = $(el.currentTarget);
+		setLocale($el.data("lang"));
+	});
 
 	function stripHash(view) {
 		if (!view) return '';
@@ -26,12 +69,12 @@ const APP_CONTAINER_ID = "app";
 		return view;
 	}
 
-	function fetchText(path){
-		return fetch(path).then(response => response.text()).catch(err=>{error(err); return null;});
+	function fetchText(path) {
+		return fetch(path).then(response => response.text()).catch(err => { error(err); return null; });
 	}
 
 	// TODO: add better error handling
-	function error(msg){
+	function error(msg) {
 		alert("Error: " + msg);
 	}
 
@@ -51,9 +94,11 @@ const APP_CONTAINER_ID = "app";
 		}
 
 		$(`#${APP_CONTAINER_ID}`).html(view);
+		$(document.body).i18n();
 
 		const script = await loadScript(hashName);
 		document.title = `${APP_BASE_TITLE}${script?.titleSuffix ? ` - ${script?.titleSuffix}` : ''}`;
+
 		if (script) {
 			script.init();
 		} else {
@@ -69,7 +114,7 @@ const APP_CONTAINER_ID = "app";
 		if (!hashName) {
 			hashName = 'home';
 		}
-		switch (hashName){
+		switch (hashName) {
 			case 'home':
 				return new HomeController();
 			case 'test':
@@ -86,16 +131,16 @@ const APP_CONTAINER_ID = "app";
 
 		// update header `active` link state
 		const headerLinks = $(`#header`).find(`a.nav-link`);
-		headerLinks.each((idx, element)=>{
+		headerLinks.each((idx, element) => {
 			const $el = $(element);
 			const href = stripHash($el.attr(`href`));
 
-			if (href != strippedHash){
+			if (href != strippedHash) {
 				$el.removeClass(`active`);
 			} else {
-				$el.addClass(`active`)
+				$el.addClass(`active`);
 			}
-		})
+		});
 	};
 
 	window.onload = function () {
