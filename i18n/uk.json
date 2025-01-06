@@ -1,4 +1,7 @@
 {
 	"homepage-welcome": "Головна сторінка",
-	"test-link": "Тест"
+	"test-link": "Тест",
+	"route-links": {
+		"test": "Тест"
+	}
 }

@@ -9,7 +9,7 @@ import TestController from "./src/controllers/testCtrl.js";
  * @typedef {{
  * 	titleSuffix: string,
  * 	init: function,
- * }} View
+ * }} Controller
  */
 
 //-----------------------------------------------------------------------------
@@ -31,16 +31,27 @@ const LOCALE_IMAGES = {
 }
 const LOCALE_SWITCH_ID = "locale-switch";
 
-
 const APP_BASE_TITLE = "Pong Game";
 const APP_CONTAINER_ID = "app";
+
+/**
+ *  @type {{[key: string]: Controller }}
+ *  Map of routes to controllers. The key is the hash name. The value is the controller class.
+ *  @todo: Add routes + controllers here
+*/
+const ROUTES = {
+	"home": HomeController,
+	"test": TestController,
+}
+// Default route if the hash is not found (preferred route).
+const DEFAULT_ROUTE = "home";
 
 //-----------------------------------------------------------------------------
 
 (async function () {
 	// I18N setup & load
 	// $.i18n.debug = true;
-	await $.i18n().load(LOCALE_URLS);
+	$.i18n().load(LOCALE_URLS);
 
 	function setLocale(locale="en"){
 		if (!Object.keys(LOCALE_URLS).includes(locale)) {
@@ -71,26 +82,22 @@ const APP_CONTAINER_ID = "app";
 		return view;
 	}
 
-	function fetchText(path) {
-		return fetch(path).then(response => response.text()).catch(err => { error(err); return null; });
-	}
-
 	// TODO: add better error handling
-	function error(msg) {
-		alert("Error: " + msg);
+	function fetchText(path) {
+		return fetch(path).then(response => response.text()).catch(err => { alert("An error occurred. Reload the page please: "); console.error(err); return null; });
 	}
 
 	async function loadView(hashName) {
 		if (!hashName) {
-			hashName = 'home';
+			hashName = DEFAULT_ROUTE;
 		}
 		var viewFile = `/src/views/${hashName}.html`;
 
 		const view = await fetchText(viewFile);
 
 		if (!view) {
-			if (hashName != 'home') {
-				loadView('home');
+			if (hashName != DEFAULT_ROUTE) {
+				loadView(DEFAULT_ROUTE);
 			}
 			return;
 		}
@@ -99,31 +106,31 @@ const APP_CONTAINER_ID = "app";
 		$(document.body).i18n();
 
 		const script = await loadScript(hashName);
-		document.title = `${APP_BASE_TITLE}${script?.titleSuffix ? ` - ${script?.titleSuffix}` : ''}`;
 
 		if (script) {
+			if (script.titleSuffix) {
+				document.title = `${APP_BASE_TITLE} - ${script.titleSuffix}`;
+			}
 			script.init();
 		} else {
-			console.log("No script found for #" + hashName);
+			document.title = `${APP_BASE_TITLE}`;
+			if (!(hashName in ROUTES)) {
+				console.warn("No script found for #" + hashName);
+			}
 		}
-
 	}
 	/**
 	 * @param {string} hashName
-	 * @returns {Promise<View | null>}
+	 * @returns {Controller | null}
 	 */
-	async function loadScript(hashName) {
-		if (!hashName) {
-			hashName = 'home';
+	function loadScript(hashName) {
+		if (!hashName || !(hashName in ROUTES)) {
+			hashName = DEFAULT_ROUTE;
 		}
-		switch (hashName) {
-			case 'home':
-				return new HomeController();
-			case 'test':
-				return new TestController();
-			default:
-				return null;
+		if (ROUTES[hashName]) {
+			return new ROUTES[hashName]();
 		}
+		return null;
 	}
 
 	window.onhashchange = function () {

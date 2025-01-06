@@ -166,9 +166,9 @@
 			// should probably not change the 'this.parser' but just
 			// pass it to the parser.
 			this.parser.language = $.i18n.languages[ $.i18n().locale ] || $.i18n.languages[ 'default' ];
-			if ( message === '' ) {
-				message = key;
-			}
+			// if ( message === '' ) {
+				// message = key;
+			// }
 			return this.parser.parse( message, parameters );
 		}
 	};
@@ -242,7 +242,11 @@
 						$this.attr( type, i18n.parse( key ) );
 					}
 				} else {
-					$this.text( i18n.parse( messageKey ) );
+					const translatedText = i18n.parse(messageKey);
+					if ('' !== translatedText) {
+						$this.text(translatedText);
+					}
+					// $this.text( i18n.parse( messageKey ) );
 				}
 			} else {
 				$this.find( '[data-i18n]' ).i18n();

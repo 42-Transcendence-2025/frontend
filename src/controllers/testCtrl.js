@@ -1,5 +1,5 @@
-/** @type {View} */
-export default class View {
+/** @type {Controller} */
+export default class Controller {
 	titleSuffix = "Test";
 
 	init(){
