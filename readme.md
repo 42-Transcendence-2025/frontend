@@ -2,6 +2,13 @@
 
 Frontend for the ft_transcendence game.
 
+## Tools used
+
+- Bootstrap v5.3
+- jQuery
+- jQuery i18n
+- Font Awesome icons
+
 ## Development
 
 ### Page routing

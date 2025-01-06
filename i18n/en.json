@@ -1,7 +1,4 @@
 {
-	"homepage-welcome": "Welcome to the Home Page",
-	"test-link": "Test",
-	"route-links": {
-		"test": "Test"
-	}
+	"homepage-welcome": "Home Page",
+	"test-link": "Test"
 }

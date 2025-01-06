@@ -1,7 +1,4 @@
 {
 	"homepage-welcome": "Benvenuto nella pagina principale",
-	"test-link": "Test",
-	"route-links": {
-		"test": "Test"
-	}
+	"test-link": "Test"
 }

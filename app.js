@@ -84,20 +84,31 @@ const DEFAULT_ROUTE = "home";
 
 	// TODO: add better error handling
 	function fetchText(path) {
-		return fetch(path).then(response => response.text()).catch(err => { alert("An error occurred. Reload the page please: "); console.error(err); return null; });
+		return fetch(path)
+		.then(res => {
+			if (!res.ok) {
+				throw new Error(`HTTP error!: ${res}`);
+			}
+			return res.text();
+		})
+		.catch(err => {
+			alert("An error occurred. Reload the page please: "); console.error(err);
+			return null;
+		});
 	}
 
 	async function loadView(hashName) {
-		if (!hashName) {
+		if (!hashName || !(hashName in ROUTES)) {
 			hashName = DEFAULT_ROUTE;
 		}
+
 		var viewFile = `/src/views/${hashName}.html`;
 
-		const view = await fetchText(viewFile);
+		const view = (hashName in ROUTES) ? await fetchText(viewFile) : null;
 
 		if (!view) {
 			if (hashName != DEFAULT_ROUTE) {
-				loadView(DEFAULT_ROUTE);
+				window.location.hash = DEFAULT_ROUTE;
 			}
 			return;
 		}
@@ -105,7 +116,7 @@ const DEFAULT_ROUTE = "home";
 		$(`#${APP_CONTAINER_ID}`).html(view);
 		$(document.body).i18n();
 
-		const script = await loadScript(hashName);
+		const script = loadScript(hashName);
 
 		if (script) {
 			if (script.titleSuffix) {
