@@ -69,6 +69,10 @@ body {
 }
 /* ----------------------------------------------------------------------------- */
 
+.animate-pulse-heartbeat-slow {
+	animation: pulse-heartbeat 5s infinite, heartbeat 5s infinite;
+}
+
 .animation-duration-1s {
 	animation-duration: 1s;
 }
