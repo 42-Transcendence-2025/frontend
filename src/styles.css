@@ -1,10 +1,80 @@
-*, *::before, *::after {
+*,
+*::before,
+*::after {
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
 }
 
-body{
+body {
 	height: 100vh;
 	height: 100dvh;
+}
+
+
+/* GRID DARK BG WITH ANIMATION */
+.grid-bg {
+	color: #999;
+	background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAGpJREFUeJzt2bENwDAMxEAVmsABnAUF2PtPEKdPwyoqePgB2H+stTNzzrvPTk8cVRWdvD1jXH9nfDGLMIswizCLMIswizCLMIswizCLMIswizCLMIswizCLMIswizCLMIswizCLMAtq+Cc+TmscZbJ40zAAAAAASUVORK5CYII=") repeat 0 0;
+
+	animation: bg-scrolling-reverse 2s infinite;
+
+	animation-timing-function: linear;
+}
+
+@keyframes bg-scrolling-reverse {
+	100% {
+		background-position: 50px 50px;
+	}
+}
+
+@keyframes bg-scrolling {
+	0% {
+		background-position: 50px 50px;
+	}
+}
+/* ----------------------------------------------------------------------------- */
+
+.animate-heartbeat {
+	animation: heartbeat 2.5s infinite;
+}
+
+@keyframes heartbeat {
+	0% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+/* ----------------------------------------------------------------------------- */
+
+.animate-pulse {
+	animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(.9);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+/* ----------------------------------------------------------------------------- */
+
+.animation-duration-1s {
+	animation-duration: 1s;
+}
+.animation-duration-3s {
+	animation-duration: 3s;
+}
+.animation-duration-5s {
+	animation-duration: 5s;
 }

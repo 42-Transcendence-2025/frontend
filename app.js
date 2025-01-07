@@ -49,6 +49,14 @@ const CONFIG = {
 			view: "test",
 			controller: TestController,
 		},
+		"singlePlayer": {
+			view: "singlePlayer",
+			controller: null,
+		},
+		"multiPlayer": {
+			view: "multiPlayer",
+			controller: null,
+		},
 	},
 	// Default route if the hash is not found.
 	defaultRoute: "",
