@@ -14,7 +14,7 @@ Frontend for the ft_transcendence game.
 ### Page routing
 
 The page routing is handled by a view file (src/routes/views/\<page\>.html) and it's controller (src/routes/controllers/\<page\>Ctrl.js).
-The configuration is done in the `app.js` file (see `ROUTES` and `DEFAULT_ROUTE` variables inside `CONFIG` object).
+The configuration is done in the `config.js` file (see `ROUTES` and `DEFAULT_ROUTE` variables inside `CONFIG` object).
 
 #### Controllers
 
