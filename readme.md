@@ -13,8 +13,8 @@ Frontend for the ft_transcendence game.
 
 ### Page routing
 
-The page routing is handled by a view file (src/views/\<page\>.html) and it's controller (src/controllers/\<page\>Ctrl.js).
-The configuration is done in the `app.js` file (see `ROUTES` and `DEFAULT_ROUTE` variables).
+The page routing is handled by a view file (src/routes/views/\<page\>.html) and it's controller (src/routes/controllers/\<page\>Ctrl.js).
+The configuration is done in the `app.js` file (see `ROUTES` and `DEFAULT_ROUTE` variables inside `CONFIG` object).
 
 #### Controllers
 
@@ -24,7 +24,7 @@ They are used to bind events and to initialize the page.
 Example:
 
 ```js
-// src/controllers/homeCtrl.js
+// src/routes/controllers/homeCtrl.js
 /** @type {Controller} */
 export default class Controller {
 	titleSuffix = "Home";
@@ -48,7 +48,7 @@ Views are used to display a page. They are html files that will be handled by th
 
 ### Translations
 
-Translations are stored in the `i18n` folder.
+Translations are stored in the [`i18n`](i18n) folder.
 To use a translation in html, use the `data-i18n` attribute.
 
 Example:

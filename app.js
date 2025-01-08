@@ -1,5 +1,5 @@
-import HomeController from "./src/controllers/homeCtrl.js";
-import TestController from "./src/controllers/testCtrl.js";
+import HomeController from "./src/routes/controllers/homeCtrl.js";
+import TestController from "./src/routes/controllers/testCtrl.js";
 
 //-----------------------------------------------------------------------------
 
@@ -31,6 +31,7 @@ import TestController from "./src/controllers/testCtrl.js";
 */
 const CONFIG = {
 	debug: false,
+	routesViewsPath: "src/routes/views",
 	baseTitle: "Pong Game",
 	appContainerID: "app",
 
@@ -133,7 +134,7 @@ const CONFIG = {
 				viewFile += ".html";
 			}
 
-			const response = await fetch(`/src/views/${viewFile}`);
+			const response = await fetch(`${CONFIG.routesViewsPath}/${viewFile}`);
 			if (!response.ok){
 				throw new Error(`Failed to fetch view "${hashName}"`);
 			}
