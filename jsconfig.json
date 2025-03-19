@@ -3,5 +3,13 @@
 		"include": [
 			"jquery"
 		]
+	},
+	"buildOptions": {
+
+	},
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+		}
 	}
 }

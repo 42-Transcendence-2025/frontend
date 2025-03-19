@@ -1,5 +1,12 @@
 import HomeController from "./src/routes/controllers/homeCtrl.js";
 
+/**
+ * @type {{
+ *     authManager: AuthManager,
+ * }}
+ */
+window.tools = {};
+
 // TYPES
 
 /**
@@ -33,6 +40,10 @@ export const CONFIG = {
 	baseTitle: "Pong Game",
 	appContainerID: "app",
 
+	apiRoutes: {
+		userApiUrl: "http://localhost:8000/api/v1",
+	},
+
 	/**
 	 *  Routing map. The key is the hash (without the #) name. The value is an object with the following properties:
 	 *  view: view file name (without the .html extension)
@@ -44,14 +55,18 @@ export const CONFIG = {
 			view: "home",
 			controller: HomeController,
 		},
-		"singlePlayer": {
+		singlePlayer: {
 			view: "singlePlayer",
 			controller: null,
 		},
-		"multiPlayer": {
+		multiPlayer: {
 			view: "multiPlayer",
 			controller: null,
 		},
+		login: {
+			view: "login",
+			controller: null,
+		}
 	},
 	// Default route if the hash is not found.
 	defaultRoute: "",

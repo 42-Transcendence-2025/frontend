@@ -1,4 +1,5 @@
-import { CONFIG } from "./config.js";
+import {CONFIG} from "./config.js";
+import {AuthManager} from "./src/authManager.js";
 
 //-----------------------------------------------------------------------------
 
@@ -49,12 +50,12 @@ import { CONFIG } from "./config.js";
 
 		try {
 			let viewFile = selectedRoute.view;
-			if (!viewFile.endsWith(".html")){
+			if (!viewFile.endsWith(".html")) {
 				viewFile += ".html";
 			}
 
 			const response = await fetch(`${CONFIG.routesViewsPath}/${viewFile}`);
-			if (!response.ok){
+			if (!response.ok) {
 				throw new Error(`Failed to fetch view "${hashName}"`);
 			}
 			const viewHTML = await response.text();
@@ -64,7 +65,7 @@ import { CONFIG } from "./config.js";
 
 			const controller = selectedRoute.controller ? new selectedRoute.controller() : null;
 			document.title = CONFIG.baseTitle;
-			if (controller){
+			if (controller) {
 				if (controller.titleSuffix) {
 					document.title = `${CONFIG.baseTitle} - ${controller.titleSuffix}`;
 				}
@@ -102,5 +103,7 @@ import { CONFIG } from "./config.js";
 	window.onload = function () {
 		document.title = CONFIG.baseTitle;
 		$(window).trigger("hashchange");
+
+		new AuthManager(CONFIG.apiRoutes.userApiUrl);
 	};
 }());
