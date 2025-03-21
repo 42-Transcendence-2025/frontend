@@ -2,3 +2,8 @@ assets/flags/*.png
 !assets/flags/us.png
 !assets/flags/it.png
 !assets/flags/ua.png
+.idea
+.vscode
+.DS_Store
+node_modules
+dist
