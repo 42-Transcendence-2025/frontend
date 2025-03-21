@@ -45,7 +45,7 @@ export const CONFIG = {
 	appContainerID: "app",
 
 	apiRoutes: {
-		userApiUrl: `${BASE_URL}:8000/api/v1`,
+		userApiUrl: `${BASE_URL}:8003/`,
 	},
 
 	/**
