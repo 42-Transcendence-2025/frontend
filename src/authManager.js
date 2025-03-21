@@ -5,8 +5,8 @@ export class AuthManager {
 	static #ACCESS_TOKEN_KEY = "access_token";
 	static #REFRESH_TOKEN_KEY = "refresh_token";
 	//-------------------------------------------
-	// TODO: set these
-	#userApiUrl = "";
+	/** @type {string} */
+	#userApiUrl;
 
 	//-------------------------------------------
 	#id = new Date().getTime();
@@ -80,6 +80,7 @@ export class AuthManager {
 		}
 		console.warn("Missing JWT in localStorage. Login required.");
 		this.jwt = null;
+		// TODO: redirect to login page
 		return null;
 	}
 	#saveJwtToStorage() {

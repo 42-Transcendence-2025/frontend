@@ -18,6 +18,10 @@ window.tools = {};
 
 //------------------------------------------------------------------------------
 
+const BASE_URL = window.location.origin.split(/(http[s]?:\/\/.*):/)[1];
+
+
+
 // GLOBAL SETTINGS
 /**
  * @type {{
@@ -41,7 +45,7 @@ export const CONFIG = {
 	appContainerID: "app",
 
 	apiRoutes: {
-		userApiUrl: "http://localhost:8000/api/v1",
+		userApiUrl: `${BASE_URL}:8000/api/v1`,
 	},
 
 	/**
