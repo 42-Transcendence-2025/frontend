@@ -216,7 +216,7 @@ export class AuthManager {
 		this.otpRequired = false;
 		this.userForOtp = null;
 		this.#clearJwtFromStorage();
-		window.location.href = `#${CONFIG.routes.login}`;
+		window.location.href = `#${CONFIG.routes.login.view}`;
 	}
 
 	// JWT-related methods
@@ -250,7 +250,7 @@ export class AuthManager {
 			console.error('Token refresh failed:', error);
 			this.#clearJwtFromStorage();
 			clearInterval(this.#pollingInterval);
-			window.location.href = `#${CONFIG.routes.login}`;
+			window.location.href = `#${CONFIG.routes.login.view}`;
 			// throw error;
 		})
 		.always(() => {
