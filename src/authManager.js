@@ -4,9 +4,13 @@ import {jwtDecode} from "/libs/jwt-decode-4.0.0/jwt-decode-4.0.0.js";
 export class AuthManager {
 	static #ACCESS_TOKEN_KEY = "access_token";
 	static #REFRESH_TOKEN_KEY = "refresh_token";
+	static #POLLING_INTERVAL = 1000 * 60 * 5; // TODO: decrease this if needed
 	//-------------------------------------------
 	/** @type {string} */
 	#userApiUrl;
+
+	/** @type {number | null} */
+	#pollingInterval = null;
 
 	//-------------------------------------------
 	#id = new Date().getTime();
@@ -55,6 +59,10 @@ export class AuthManager {
 		console.debug(`AuthManager destroyed. #${this.#id}`);
 	}
 
+
+	isLoggedIn() {
+		return !this.isAccessTokenExpired();
+	}
 	//-----------------------------------------------------------------------------------------------------------------
 	// LOCAL STORAGE
 
@@ -70,6 +78,14 @@ export class AuthManager {
 		this.#saveJwtToStorage();
 	}
 
+	startPollingAccessToken(){
+		clearInterval(this.#pollingInterval);
+		console.debug(`AuthManager started polling access token every ${AuthManager.#POLLING_INTERVAL} ms`);
+		this.#pollingInterval = setInterval(() => {
+			this.refreshAccessToken();
+		}, AuthManager.#POLLING_INTERVAL);
+	}
+
 	#getJwtFromStorage() {
 		const access = localStorage.getItem(AuthManager.#ACCESS_TOKEN_KEY);
 		const refresh = localStorage.getItem(AuthManager.#REFRESH_TOKEN_KEY);
@@ -79,8 +95,8 @@ export class AuthManager {
 			return this.jwt;
 		}
 		console.warn("Missing JWT in localStorage. Login required.");
-		this.jwt = null;
-		// TODO: redirect to login page
+		this.jwt = {access: null, refresh: null};
+		// TODO: redirect to login page from somewhere
 		return null;
 	}
 	#saveJwtToStorage() {
@@ -171,6 +187,8 @@ export class AuthManager {
 		.done((response) => {
 			this.#lastResponse = response;
 			this.#updateJwt(response.access, response.refresh);
+			this.startPollingAccessToken();
+
 			this.#user = response.user;
 			this.#otpRequired = false;
 			this.#otpRequiredUsername = null;
@@ -203,7 +221,7 @@ export class AuthManager {
 
 	// JWT-related methods
 	isAccessTokenExpired() {
-		if (!this.jwt.access) return true;
+		if (!this.jwt?.access) return true;
 		try {
 			const decoded = jwtDecode(this.jwt.access); // TODO: check if jwtDecode is available
 			return decoded.exp * 1000 < Date.now();
@@ -231,6 +249,7 @@ export class AuthManager {
 		.fail((error) => {
 			console.error('Token refresh failed:', error);
 			this.#clearJwtFromStorage();
+			clearInterval(this.#pollingInterval);
 			window.location.href = `#${CONFIG.routes.login}`;
 			// throw error;
 		})

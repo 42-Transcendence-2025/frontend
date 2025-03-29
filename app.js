@@ -1,5 +1,7 @@
 import {CONFIG} from "./config.js";
 import {AuthManager} from "./src/authManager.js";
+import {HashUtils} from "./src/utils/hashUtils.js";
+import {I18nUtils} from "./src/utils/i18nUtils.js";
 
 //-----------------------------------------------------------------------------
 
@@ -8,34 +10,15 @@ import {AuthManager} from "./src/authManager.js";
 	$.i18n.debug = CONFIG.debug;
 	$.i18n().load(CONFIG.locale.configs);
 
-	function setLocale(locale = "en") {
-		if (!Object.keys(CONFIG.locale.configs).includes(locale)) {
-			console.error("Unknown locale: " + locale);
-			locale = "en";
-		}
-		$.i18n().locale = locale;
-		localStorage.setItem(CONFIG.localStorageKeys.locale, locale);
-		$(document.body).i18n();
-		const img = $(`#${CONFIG.locale.switchSelectorID} .selected-flag-img`);
-		if (img.attr("src") != CONFIG.locale.images[locale]) {
-			img.attr("src", CONFIG.locale.images[locale]);
-		}
-		img.removeClass("d-none");
-	}
+
 	let savedLocale = localStorage.getItem(CONFIG.localStorageKeys.locale);
-	setLocale(savedLocale);
+	I18nUtils.setLocale(savedLocale);
 
 	$(`#${CONFIG.locale.switchSelectorID} .lang-item`).on("click", (el) => {
 		const $el = $(el.currentTarget);
-		setLocale($el.data("lang"));
+		I18nUtils.setLocale($el.data("lang"));
 	});
 
-	function stripHash(view) {
-		if (!view) return '';
-		view = view.startsWith('#') ? view.substring(1) : view;
-		view = view.split('?')[0].split('_')[0];
-		return view;
-	}
 
 
 	async function loadView(hashName) {
@@ -45,6 +28,12 @@ import {AuthManager} from "./src/authManager.js";
 			if (hashName == CONFIG.defaultRoute) return;
 			console.warn(`Unknown route "${hashName}" - redirecting to "#${CONFIG.defaultRoute}"`);
 			window.location.hash = CONFIG.defaultRoute;
+			return;
+		}
+		if (selectedRoute.authRequired && !window.tools.authManager.isLoggedIn()) {
+			// TODO: add a message to the user that they need to login
+			console.warn(`User is not logged in. Redirecting to "#${CONFIG.routes.login.view}"`);
+			window.location.hash = CONFIG.routes.login.view;
 			return;
 		}
 
@@ -73,7 +62,7 @@ import {AuthManager} from "./src/authManager.js";
 			}
 
 		} catch (err) {
-			// TODO: add better error handling
+			// TODO: add a message to the user that the page failed to load and they should reload the page
 			console.warn(`Failed to load route "${hashName}". Error: `, err);
 			alert("An error occurred. Reload the page please");
 			return;
@@ -83,27 +72,25 @@ import {AuthManager} from "./src/authManager.js";
 
 	window.onhashchange = function () {
 		const newHash = window.location.hash;
-		const strippedHash = stripHash(newHash);
-		loadView(strippedHash);
+		const route = HashUtils.stripHash(newHash);
+		loadView(route);
 
 		// update header `active` link state
 		const headerLinks = $(`#header`).find(`a.nav-link`);
 		headerLinks.each((idx, element) => {
 			const $el = $(element);
-			const href = stripHash($el.attr(`href`));
-
-			if (href != strippedHash) {
-				$el.removeClass(`active`);
-			} else {
-				$el.addClass(`active`);
-			}
+			const href = HashUtils.stripHash($el.attr(`href`));
+			$el.toggleClass(`active`, href == route);
 		});
 	};
+	function loadTools(){
+		window.tools.authManager = new AuthManager(CONFIG.apiRoutes.userApiUrl);
+	}
 
 	window.onload = function () {
 		document.title = CONFIG.baseTitle;
-		$(window).trigger("hashchange");
+		loadTools();
 
-		new AuthManager(CONFIG.apiRoutes.userApiUrl);
+		$(window).trigger("hashchange");
 	};
 }());

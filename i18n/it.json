@@ -1,5 +1,4 @@
 {
 	"homepage-welcome": "Benvenuto al Pong Game",
-	"single-player-button": "Partita contro CPU",
-	"multi-player-button": "Partita multigiocatore"
+	"play-casual-game": "Partita Casuale"
 }

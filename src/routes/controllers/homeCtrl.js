@@ -1,15 +1,14 @@
 /** @type {Controller} */
-export default class Controller {
+export class HomeController {
 	titleSuffix = "Home";
 
-	init(){
+	init() {
 		console.log("Home Controller");
 		this.#bindEvents();
 	};
 
 
-
-	#bindEvents(){
+	#bindEvents() {
 
 	};
 }

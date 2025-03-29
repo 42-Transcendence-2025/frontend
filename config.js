@@ -1,4 +1,8 @@
-import HomeController from "./src/routes/controllers/homeCtrl.js";
+import {HomeController} from "./src/routes/controllers/homeCtrl.js";
+import {LoginController} from "./src/routes/controllers/loginCtrl.js";
+import {LandingPageController} from "./src/routes/controllers/landingPageCtrl.js";
+import {CasualGameController} from "./src/routes/controllers/casualGameCtrl.js";
+
 
 /**
  * @type {{
@@ -28,7 +32,7 @@ const BASE_URL = window.location.origin.split(/(http[s]?:\/\/.*):/)[1];
  * 	debug: boolean,
  * 	baseTitle: string,
  * 	appContainerID: string,
- * 	routes: {[key: string]: {view: string, controller: Controller}},
+ * 	routes: {[key: string]: {view: string, controller: Controller, authRequired?: boolean}},
  * 	defaultRoute: string,
  * 	locale: {
  * 		switchSelectorID: string,
@@ -56,20 +60,22 @@ export const CONFIG = {
 	*/
 	routes: {
 		"": {
+			view: "landingPage",
+			controller: LandingPageController,
+		},
+		"home": {
 			view: "home",
 			controller: HomeController,
+			authRequired: true,
 		},
-		singlePlayer: {
-			view: "singlePlayer",
-			controller: null,
-		},
-		multiPlayer: {
-			view: "multiPlayer",
-			controller: null,
+		casualGame: {
+			view: "casualGame",
+			controller: CasualGameController,
+			authRequired: true,
 		},
 		login: {
 			view: "login",
-			controller: null,
+			controller: LoginController,
 		}
 	},
 	// Default route if the hash is not found.
