@@ -49,7 +49,7 @@ export const CONFIG = {
 	appContainerID: "app",
 
 	apiRoutes: {
-		userApiUrl: `${BASE_URL}:8003/`,
+		userApiUrl: `${BASE_URL}:8003`,
 	},
 
 	/**
@@ -99,4 +99,5 @@ export const CONFIG = {
 		locale: "locale",
 	},
 };
+window.config = CONFIG;
 //-----------------------------------------------------------------------------

@@ -4,7 +4,7 @@ import {jwtDecode} from "/libs/jwt-decode-4.0.0/jwt-decode-4.0.0.js";
 export class AuthManager {
 	static #ACCESS_TOKEN_KEY = "access_token";
 	static #REFRESH_TOKEN_KEY = "refresh_token";
-	static #POLLING_INTERVAL = 1000 * 60 * 5; // TODO: decrease this if needed
+	static #POLLING_INTERVAL = 1000 * 30; // TODO: decrease this if needed
 	//-------------------------------------------
 	/** @type {string} */
 	#userApiUrl;
@@ -21,7 +21,7 @@ export class AuthManager {
 	#otpRequiredUsername = null;
 
 
-	/** @type {{accessToken: string, refreshToken: string} | null} */
+	/** @type {{access: string, refresh: string} | null} */
 	#jwt = null;
 
 	#otpRequired = false;
@@ -52,7 +52,7 @@ export class AuthManager {
 	}
 
 	destroy() {
-		this.#jwt = null;
+		this.#updateJwt(null, null);
 		this.#authErrors = null;
 		this.#otpRequired = false;
 		this.#isLoading = false;
@@ -61,14 +61,18 @@ export class AuthManager {
 
 
 	isLoggedIn() {
-		return !this.isAccessTokenExpired();
+		const status = this.isAccessTokenExpired();
+		if (status) {
+			this.#clearJwtFromStorage();
+		}
+		return !status;
 	}
 	//-----------------------------------------------------------------------------------------------------------------
 	// LOCAL STORAGE
 
 	/**
-	 * @param {string} access
-	 * @param {string} refresh
+	 * @param {string | null} access
+	 * @param {string | null} refresh
 	 */
 	#updateJwt(access, refresh) {
 		this.#jwt = {
@@ -90,18 +94,29 @@ export class AuthManager {
 		const access = localStorage.getItem(AuthManager.#ACCESS_TOKEN_KEY);
 		const refresh = localStorage.getItem(AuthManager.#REFRESH_TOKEN_KEY);
 		if (access && refresh) {
-			this.jwt = { access, refresh };
-			console.debug(`authManager[getTokensFromStorage]: JWT found in localStorage. ${this.jwt}`);
-			return this.jwt;
+			this.#updateJwt(access, refresh);
+			console.debug(`authManager[getTokensFromStorage]: JWT found in localStorage. `, this.#jwt);
+			if (this.isAccessTokenExpired()){
+				console.warn("JWT expired. Logging out.");
+				this.logout(false);
+			} else {
+				this.startPollingAccessToken();
+			}
+			return this.#jwt;
 		}
 		console.warn("Missing JWT in localStorage. Login required.");
-		this.jwt = {access: null, refresh: null};
+		this.logout(false);
+
 		// TODO: redirect to login page from somewhere
 		return null;
 	}
 	#saveJwtToStorage() {
-		localStorage.setItem(AuthManager.#ACCESS_TOKEN_KEY, this.jwt?.access ?? "");
-		localStorage.setItem(AuthManager.#REFRESH_TOKEN_KEY, this.jwt?.refresh ?? "");
+		if (this.#jwt?.access?.trim()) {
+			localStorage.setItem(AuthManager.#ACCESS_TOKEN_KEY, this.#jwt.access);
+		}
+		if (this.#jwt?.refresh?.trim()) {
+			localStorage.setItem(AuthManager.#REFRESH_TOKEN_KEY, this.#jwt.refresh);
+		}
 	}
 	#clearJwtFromStorage() {
 		localStorage.removeItem(AuthManager.#ACCESS_TOKEN_KEY);
@@ -112,7 +127,7 @@ export class AuthManager {
 
 
 	/**
-	 * @typedef LoginFormDTO {{email: string, username: string, password: string, passwordConfirm: string}}
+	 * @typedef LoginFormDTO {{email: string, username: string, password: string, passwordConfirm?: string}}
 	 */
 
 	/** @param {LoginFormDTO} formData */
@@ -123,12 +138,19 @@ export class AuthManager {
 		$.ajax({
 			url: `${this.#userApiUrl}/login/`,
 			method: "POST",
-			data: formData,
+			contentType: "application/json",
+			data: JSON.stringify(formData),
 		})
 		.done((response) => {
 			this.#lastResponse = response;
-			// this.#otpRequired = true;
-			this.#otpRequiredUsername = formData.username;
+			this.#updateJwt(response.access, response.refresh);
+			this.startPollingAccessToken();
+			if (response.access && response.refresh) {
+				window.location.href = `#${CONFIG.routes.home.view}`;
+			} else {
+				this.#otpRequired = true;
+				this.#otpRequiredUsername = formData.username;
+			}
 		})
 		.fail((error) => {
 			console.error('Login failed:', error);
@@ -149,12 +171,20 @@ export class AuthManager {
 		$.ajax({
 			url: `${this.#userApiUrl}/register/`,
 			method: "POST",
-			data: formData,
+			contentType: "application/json",
+			data: JSON.stringify(formData),
 		})
 		.done((response) => {
 			this.#lastResponse = response;
-			this.#otpRequired = true;
-			this.#otpRequiredUsername = formData.username;
+			this.#updateJwt(response.access, response.refresh);
+			this.startPollingAccessToken();
+
+			if (response.access && response.refresh) {
+				window.location.href = `#${CONFIG.routes.home.view}`;
+			} else {
+				this.#otpRequiredUsername = formData.username;
+				this.#otpRequired = true;
+			}
 		})
 		.fail((error) => {
 			console.error('Registration failed:', error);
@@ -195,8 +225,8 @@ export class AuthManager {
 			return true;
 		})
 		.fail((error) => {
-			if (error.response?.data) {
-				this.#authErrors = error.response.data;
+			if (error.response) {
+				this.#authErrors = error.response;
 			} else {
 				console.error('OTP confirmation failed:', error);
 			}
@@ -207,23 +237,22 @@ export class AuthManager {
 		});
 	};
 
-	logout() {
+	logout(redirect = true) {
 		this.user = null;
-		this.jwt = {
-			access: null,
-			refresh: null,
-		};
-		this.otpRequired = false;
-		this.userForOtp = null;
+		this.#updateJwt(null, null);
+		this.#otpRequired = false;
+		this.#otpRequiredUsername = null;
 		this.#clearJwtFromStorage();
-		window.location.href = `#${CONFIG.routes.login.view}`;
+		if (redirect) {
+			window.location.href = `#${CONFIG.routes.login.view}`;
+		}
 	}
 
 	// JWT-related methods
 	isAccessTokenExpired() {
-		if (!this.jwt?.access) return true;
+		if (!this.#jwt?.access) return true;
 		try {
-			const decoded = jwtDecode(this.jwt.access); // TODO: check if jwtDecode is available
+			const decoded = jwtDecode(this.#jwt.access); // TODO: check if jwtDecode is available
 			return decoded.exp * 1000 < Date.now();
 		} catch (error) {
 			console.error('Failed to decode JWT:', error);
@@ -244,7 +273,7 @@ export class AuthManager {
 		})
 		.done((response) => {
 			this.#lastResponse = response;
-			this.#updateJwt(response.access, response.refresh);
+			this.#setAccessToken(response.access);
 		})
 		.fail((error) => {
 			console.error('Token refresh failed:', error);
@@ -267,7 +296,7 @@ export class AuthManager {
 		})
 		.done((response) => {
 			this.#lastResponse = response;
-			this.#user = response.data;
+			this.#user = response;
 		})
 		.fail((error) => {
 			console.error('User info retrieval failed:', error);
@@ -281,7 +310,7 @@ export class AuthManager {
 
 	/** @type {string | null} */
 	get accessToken() {
-		return this.#jwt?.accessToken?.trim() ?? null;
+		return this.#jwt?.access?.trim() ?? null;
 	}
 	get authErrors() {
 		return this.#authErrors;
@@ -294,6 +323,20 @@ export class AuthManager {
 	}
 	/** @type {string | null} */
 	get refreshToken() {
-		return this.#jwt?.refreshToken?.trim() ?? null;
+		return this.#jwt?.refresh?.trim() ?? null;
+	}
+	// SETTERS ---------------------------------------------------------------------------------------------------------
+
+	/**
+	 * @param {string | null} value
+	 */
+	#setAccessToken(value) {
+		this.#jwt.access = value;
+		this.#saveJwtToStorage();
+	}
+
+	#setRefreshToken(value) {
+		this.#jwt.refresh = value;
+		this.#saveJwtToStorage();
 	}
 }
