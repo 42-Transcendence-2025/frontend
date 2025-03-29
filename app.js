@@ -12,6 +12,7 @@ import {I18nUtils} from "./src/utils/i18nUtils.js";
 
 
 	let savedLocale = localStorage.getItem(CONFIG.localStorageKeys.locale);
+	if (!savedLocale) savedLocale = "en";
 	I18nUtils.setLocale(savedLocale);
 
 	$(`#${CONFIG.locale.switchSelectorID} .lang-item`).on("click", (el) => {

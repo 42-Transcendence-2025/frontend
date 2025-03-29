@@ -33,6 +33,7 @@ export class AuthManager {
 
 	/** @type {object | null} */
 	#lastResponse = null;
+
 	//-------------------------------------------
 
 	/**
@@ -48,7 +49,15 @@ export class AuthManager {
 		window.tools.authManager = this;
 		console.debug(`AuthManager created. #${this.#id}`);
 
-		this.#getJwtFromStorage();
+		this.#loadJwtFromStorage();
+		this.#bindEvents();
+	}
+
+	#bindEvents(){
+		$(`#logout-button`).on("click", (e) => {
+			e.preventDefault();
+			this.logout(true);
+		});
 	}
 
 	destroy() {
@@ -67,6 +76,7 @@ export class AuthManager {
 		}
 		return !status;
 	}
+
 	//-----------------------------------------------------------------------------------------------------------------
 	// LOCAL STORAGE
 
@@ -82,7 +92,7 @@ export class AuthManager {
 		this.#saveJwtToStorage();
 	}
 
-	startPollingAccessToken(){
+	startPollingAccessToken() {
 		clearInterval(this.#pollingInterval);
 		console.debug(`AuthManager started polling access token every ${AuthManager.#POLLING_INTERVAL} ms`);
 		this.#pollingInterval = setInterval(() => {
@@ -90,17 +100,18 @@ export class AuthManager {
 		}, AuthManager.#POLLING_INTERVAL);
 	}
 
-	#getJwtFromStorage() {
+	#loadJwtFromStorage() {
 		const access = localStorage.getItem(AuthManager.#ACCESS_TOKEN_KEY);
 		const refresh = localStorage.getItem(AuthManager.#REFRESH_TOKEN_KEY);
 		if (access && refresh) {
 			this.#updateJwt(access, refresh);
 			console.debug(`authManager[getTokensFromStorage]: JWT found in localStorage. `, this.#jwt);
-			if (this.isAccessTokenExpired()){
+			if (this.isAccessTokenExpired()) {
 				console.warn("JWT expired. Logging out.");
 				this.logout(false);
 			} else {
 				this.startPollingAccessToken();
+				this.#showLogoutButton();
 			}
 			return this.#jwt;
 		}
@@ -110,6 +121,7 @@ export class AuthManager {
 		// TODO: redirect to login page from somewhere
 		return null;
 	}
+
 	#saveJwtToStorage() {
 		if (this.#jwt?.access?.trim()) {
 			localStorage.setItem(AuthManager.#ACCESS_TOKEN_KEY, this.#jwt.access);
@@ -118,6 +130,7 @@ export class AuthManager {
 			localStorage.setItem(AuthManager.#REFRESH_TOKEN_KEY, this.#jwt.refresh);
 		}
 	}
+
 	#clearJwtFromStorage() {
 		localStorage.removeItem(AuthManager.#ACCESS_TOKEN_KEY);
 		localStorage.removeItem(AuthManager.#REFRESH_TOKEN_KEY);
@@ -130,72 +143,88 @@ export class AuthManager {
 	 * @typedef LoginFormDTO {{email: string, username: string, password: string, passwordConfirm?: string}}
 	 */
 
-	/** @param {LoginFormDTO} formData */
+	/**
+	 * @param {LoginFormDTO} formData
+	 * @returns {Promise<boolean>} true if login was successful, false otherwise
+	 */
 	async login(formData) {
 		this.#isLoading = true;
 		this.#authErrors = {};
 
-		$.ajax({
-			url: `${this.#userApiUrl}/login/`,
-			method: "POST",
-			contentType: "application/json",
-			data: JSON.stringify(formData),
-		})
-		.done((response) => {
-			this.#lastResponse = response;
-			this.#updateJwt(response.access, response.refresh);
-			this.startPollingAccessToken();
-			if (response.access && response.refresh) {
-				window.location.href = `#${CONFIG.routes.home.view}`;
-			} else {
-				this.#otpRequired = true;
-				this.#otpRequiredUsername = formData.username;
-			}
-		})
-		.fail((error) => {
-			console.error('Login failed:', error);
-			if (error.response?.data) {
-				this.#authErrors = error.response.data;
-			}
-		})
-		.always(() => {
-			this.#isLoading = false;
+		return new Promise(res=>{
+			$.ajax({
+				url: `${this.#userApiUrl}/login/`,
+				method: "POST",
+				contentType: "application/json",
+				data: JSON.stringify(formData),
+			})
+				.done((response) => {
+					this.#lastResponse = response;
+					this.#updateJwt(response.access, response.refresh);
+					this.startPollingAccessToken();
+					this.#showLogoutButton();
+
+					if (response.access && response.refresh) {
+						window.location.href = `#${CONFIG.routes.home.view}`;
+					} else {
+						this.#otpRequired = true;
+						this.#otpRequiredUsername = formData.username;
+					}
+					res(true);
+				})
+				.fail((error) => {
+					if (error.responseJSON) {
+						this.#authErrors = error.responseJSON;
+					}
+					res(false);
+				})
+				.always(() => {
+					this.#isLoading = false;
+				});
 		});
 	};
 
-	/** @param {LoginFormDTO} formData */
+	/**
+	 * @param {LoginFormDTO} formData
+	 * @returns {Promise<boolean>} true if registration was successful, false otherwise
+	 */
 	async register(formData) {
 		this.#isLoading = true;
 		this.#authErrors = {};
 
-		$.ajax({
-			url: `${this.#userApiUrl}/register/`,
-			method: "POST",
-			contentType: "application/json",
-			data: JSON.stringify(formData),
-		})
-		.done((response) => {
-			this.#lastResponse = response;
-			this.#updateJwt(response.access, response.refresh);
-			this.startPollingAccessToken();
+		return new Promise(res=>{
+			$.ajax({
+				url: `${this.#userApiUrl}/register/`,
+				method: "POST",
+				contentType: "application/json",
+				data: JSON.stringify(formData),
+			})
+				.done((response) => {
+					this.#lastResponse = response;
+					this.#updateJwt(response.access, response.refresh);
+					this.startPollingAccessToken();
+					this.#showLogoutButton();
 
-			if (response.access && response.refresh) {
-				window.location.href = `#${CONFIG.routes.home.view}`;
-			} else {
-				this.#otpRequiredUsername = formData.username;
-				this.#otpRequired = true;
-			}
-		})
-		.fail((error) => {
-			console.error('Registration failed:', error);
-			if (error.response?.data) {
-				this.#authErrors = error.response.data;
-			} else {
-				console.error('Registration failed:', error);
-			}
-		})
-		.always(() => {
-			this.#isLoading = false;
+					if (response.access && response.refresh) {
+						window.location.href = `#${CONFIG.routes.home.view}`;
+					} else {
+						this.#otpRequiredUsername = formData.username;
+						this.#otpRequired = true;
+					}
+					res(true);
+				})
+				.fail((error) => {
+					console.error('Registration failed:', error);
+					if (error.responseJSON) {
+						this.#authErrors = error.responseJSON;
+					} else {
+						console.error('Registration failed:', error);
+					}
+					res(false);
+				})
+				.always(() => {
+					this.#isLoading = false;
+				});
 		});
 	};
 
@@ -214,27 +243,28 @@ export class AuthManager {
 				otp_code: otpCode,
 			},
 		})
-		.done((response) => {
-			this.#lastResponse = response;
-			this.#updateJwt(response.access, response.refresh);
-			this.startPollingAccessToken();
+			.done((response) => {
+				this.#lastResponse = response;
+				this.#updateJwt(response.access, response.refresh);
+				this.startPollingAccessToken();
+				this.#showLogoutButton();
 
-			this.#user = response.user;
-			this.#otpRequired = false;
-			this.#otpRequiredUsername = null;
-			return true;
-		})
-		.fail((error) => {
-			if (error.response) {
-				this.#authErrors = error.response;
-			} else {
-				console.error('OTP confirmation failed:', error);
-			}
-			return false;
-		})
-		.always(() => {
-			this.#isLoading = false;
-		});
+				this.#user = response.user;
+				this.#otpRequired = false;
+				this.#otpRequiredUsername = null;
+				return true;
+			})
+			.fail((error) => {
+				if (error.response) {
+					this.#authErrors = error.response;
+				} else {
+					console.error('OTP confirmation failed:', error);
+				}
+				return false;
+			})
+			.always(() => {
+				this.#isLoading = false;
+			});
 	};
 
 	logout(redirect = true) {
@@ -243,6 +273,8 @@ export class AuthManager {
 		this.#otpRequired = false;
 		this.#otpRequiredUsername = null;
 		this.#clearJwtFromStorage();
+		this.#hideLogoutButton();
+		clearInterval(this.#pollingInterval);
 		if (redirect) {
 			window.location.href = `#${CONFIG.routes.login.view}`;
 		}
@@ -271,20 +303,20 @@ export class AuthManager {
 				refresh: this.#jwt.refresh,
 			},
 		})
-		.done((response) => {
-			this.#lastResponse = response;
-			this.#setAccessToken(response.access);
-		})
-		.fail((error) => {
-			console.error('Token refresh failed:', error);
-			this.#clearJwtFromStorage();
-			clearInterval(this.#pollingInterval);
-			window.location.href = `#${CONFIG.routes.login.view}`;
-			// throw error;
-		})
-		.always(() => {
-			this.#isLoading = false;
-		});
+			.done((response) => {
+				this.#lastResponse = response;
+				this.#setAccessToken(response.access);
+			})
+			.fail((error) => {
+				console.error('Token refresh failed:', error);
+				this.#clearJwtFromStorage();
+				clearInterval(this.#pollingInterval);
+				window.location.href = `#${CONFIG.routes.login.view}`;
+				// throw error;
+			})
+			.always(() => {
+				this.#isLoading = false;
+			});
 	}
 
 	// Get user info
@@ -294,16 +326,16 @@ export class AuthManager {
 			url: `${this.#userApiUrl}/profile/`,
 			method: "GET",
 		})
-		.done((response) => {
-			this.#lastResponse = response;
-			this.#user = response;
-		})
-		.fail((error) => {
-			console.error('User info retrieval failed:', error);
-		})
-		.always(() => {
-			this.#isLoading = false;
-		});
+			.done((response) => {
+				this.#lastResponse = response;
+				this.#user = response;
+			})
+			.fail((error) => {
+				console.error('User info retrieval failed:', error);
+			})
+			.always(() => {
+				this.#isLoading = false;
+			});
 	}
 
 	// GETTERS ---------------------------------------------------------------------------------------------------------
@@ -312,19 +344,24 @@ export class AuthManager {
 	get accessToken() {
 		return this.#jwt?.access?.trim() ?? null;
 	}
+
 	get authErrors() {
 		return this.#authErrors;
 	}
+
 	get isLoading() {
 		return this.#isLoading;
 	}
+
 	get otpRequired() {
 		return this.#otpRequired;
 	}
+
 	/** @type {string | null} */
 	get refreshToken() {
 		return this.#jwt?.refresh?.trim() ?? null;
 	}
+
 	// SETTERS ---------------------------------------------------------------------------------------------------------
 
 	/**
@@ -338,5 +375,14 @@ export class AuthManager {
 	#setRefreshToken(value) {
 		this.#jwt.refresh = value;
 		this.#saveJwtToStorage();
+	}
+
+	//-----------------------------------------------------------------------------------------------------------------
+
+	#showLogoutButton(){
+		$(`#logout-button`).removeClass(`d-none`);
+	}
+	#hideLogoutButton(){
+		$(`#logout-button`).addClass(`d-none`);
 	}
 }

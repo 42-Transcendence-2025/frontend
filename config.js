@@ -2,6 +2,7 @@ import {HomeController} from "./src/routes/controllers/homeCtrl.js";
 import {LoginController} from "./src/routes/controllers/loginCtrl.js";
 import {LandingPageController} from "./src/routes/controllers/landingPageCtrl.js";
 import {CasualGameController} from "./src/routes/controllers/casualGameCtrl.js";
+import {RegisterController} from "./src/routes/controllers/registerCtrl.js";
 
 
 /**
@@ -76,7 +77,11 @@ export const CONFIG = {
 		login: {
 			view: "login",
 			controller: LoginController,
-		}
+		},
+		register: {
+			view: "register",
+			controller: RegisterController,
+		},
 	},
 	// Default route if the hash is not found.
 	defaultRoute: "",

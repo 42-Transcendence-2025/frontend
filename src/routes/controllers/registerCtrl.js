@@ -1,19 +1,22 @@
 import {CONFIG} from "../../../config.js";
 
 /** @type {Controller} */
-export class LoginController {
-	titleSuffix = "Login";
+export class RegisterController {
+	titleSuffix = "Register";
+
 
 	#mandatoryFields = [
+		`email`,
 		`username`,
 		`password`,
+		`password_confirm`,
 	];
 	#optionalFields = [
 		`otp_code`,
 	];
 
 	init() {
-		console.log("Login Controller");
+		console.log("Register Controller");
 		this.#bindEvents();
 	};
 
@@ -34,27 +37,30 @@ export class LoginController {
 			});
 		}
 
-		$(`#login-form`).on("submit", (e) => {
+		$(`#register-form`).on("submit", (e) => {
 			e.preventDefault();
-			this.#loginSubmit();
+			this.#registerSubmit();
 		});
 	};
 
-	async #loginSubmit(){
+	async #registerSubmit(){
 		// TODO: add validation
 		const formData = {
+			email: $(`#email`).val(),
 			username: $(`#username`).val(),
 			password: $(`#password`).val(),
+			password_confirm: $(`#password_confirm`).val(),
 			otp_code: $(`#otp_code`).val(),
 		};
-		await window.tools.authManager.login(formData);
+		await window.tools.authManager.register(formData);
+
 		if (!window.tools.authManager.isLoggedIn()) {
 			// TODO: show errors. Either a toast or below each field
 			if (window.tools.authManager.authErrors.detail) {
 				// TODO: show toast
-				console.warn("Login failed:", window.tools.authManager.authErrors.detail);
+				console.warn("Register failed:", window.tools.authManager.authErrors.detail);
 			} else {
-				console.warn("Login failed:", window.tools.authManager.authErrors);
+				console.warn("Register failed:", window.tools.authManager.authErrors);
 				this.#showErrors(window.tools.authManager.authErrors);
 			}
 			return;
