@@ -57,6 +57,7 @@ import {I18nUtils} from "./src/utils/i18nUtils.js";
 			if (!response.ok) {
 				throw new Error(`Failed to fetch view "${hashName}"`);
 			}
+			// TODO: possibly cache the view in memory
 			const viewHTML = await response.text();
 			$(`#${CONFIG.appContainerID}`).html(viewHTML);
 
