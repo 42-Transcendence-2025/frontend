@@ -199,7 +199,16 @@ export class AuthManager {
 				contentType: "application/json",
 				data: JSON.stringify(formData),
 			})
-				.done((response) => {
+				.done((response, textStatus, jqXHR) => {
+					console.debug(`Register response:`, response, textStatus, jqXHR);
+					if (jqXHR.status == 201){
+						// The OTP code was sent to the user's email
+						console.log(response.detail);
+						this.#otpRequiredUsername = formData.username;
+						this.#otpRequired = true;
+						res(true);
+						return;
+					}
 					this.#lastResponse = response;
 					this.#updateJwt(response.access, response.refresh);
 					this.startPollingAccessToken();
