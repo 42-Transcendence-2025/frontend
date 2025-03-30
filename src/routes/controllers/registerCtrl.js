@@ -45,7 +45,7 @@ export class RegisterController {
 	}
 
 	#bindEvents() {
-		$(`#confirm-otp-modal`).on("click", (e) => {
+		$(`#confirm-otp-form`).on("submit", (e) => {
 			e.preventDefault();
 			this.#otpSubmit();
 		});

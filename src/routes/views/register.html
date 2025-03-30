@@ -33,22 +33,24 @@
 	</div>
 
 	<div class="position-absolute top-0 start-0 w-100 z-3 h-100 d-flex flex-column justify-content-center align-items-center visually-hidden" id="confirm-otp-modal" style="background-color: rgba(0, 0, 0, 0.5);">
-		<form class="card">
-			<div class="card-header">
-				<h1 class="card-title text-info animate-pulse text-center text-uppercase" data-i18n="otp-code-sent">OTP Code Sent</h1>
-			</div>
-			<div class="card-body">
-				<p class="card-subtitle" data-i18n="otp-code-sent-desc">An OTP code has been sent to your email. Please enter it below to complete registration.</p>
-				<div class="form-floating w-100">
-					<input autocomplete="off" class="form-control" id="otp_code" name="otp_code" placeholder="OTP Code" type="text">
-					<label data-i18n="otp_code" for="otp_code">OTP Code</label>
-					<small class="form-text text-muted d-none" data-i18n="auth-otp-code-help" id="otp-code-help">OTP code is required to register</small>
+		<div class="container">
+			<form class="card" id="confirm-otp-form">
+				<div class="card-header">
+					<h1 class="card-title text-white text-center text-uppercase" data-i18n="otp-code-sent">OTP Code Sent</h1>
+					<p class="card-subtitle pb-2" data-i18n="otp-code-sent-desc">An OTP code has been sent to your email. Please enter it below to complete registration</p>
 				</div>
-			</div>
-			<div class="card-footer d-flex gap-2 justify-content-end align-items-center">
-				<button class="btn btn-success btn-lg p-3 fw-bolder text-nowrap" data-i18n="register" type="submit">CONFIRM OTP</button>
-				<a class="btn btn-danger btn-lg p-3 fw-bolder" data-i18n="login" href="#login">CLOSE</a>
-			</div>
-		</form>
+				<div class="card-body py-5">
+					<div class="form-floating">
+						<input autocomplete="off" class="form-control" id="otp_code" name="otp_code" placeholder="OTP Code" type="text">
+						<label data-i18n="otp_code" for="otp_code">OTP Code</label>
+						<small class="form-text text-muted d-none" data-i18n="auth-otp-code-help" id="otp-code-help">OTP code is required to register</small>
+					</div>
+				</div>
+				<div class="card-footer d-flex gap-2 justify-content-end align-items-center">
+					<button class="btn btn-success p-3 text-nowrap" data-i18n="register" type="submit">CONFIRM OTP</button>
+					<a class="btn btn-danger p-3" data-i18n="close" href="#login" type="button">CLOSE</a>
+				</div>
+			</form>
+		</div>
 	</div>
 </div>

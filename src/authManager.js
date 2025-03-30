@@ -158,8 +158,17 @@ export class AuthManager {
 				contentType: "application/json",
 				data: JSON.stringify(formData),
 			})
-				.done((response) => {
+				.done((response, status, jqXHR) => {
 					this.#lastResponse = response;
+					if (jqXHR.status == 202){
+						// The OTP code was sent to the user's email
+						console.log(response.detail);
+						this.#otpRequiredUsername = formData.username;
+						this.#otpRequired = true;
+						res(true);
+						return;
+					}
+
 					this.#updateJwt(response.access, response.refresh);
 					this.startPollingAccessToken();
 					this.#showLogoutButton();
@@ -200,6 +209,7 @@ export class AuthManager {
 				data: JSON.stringify(formData),
 			})
 				.done((response, textStatus, jqXHR) => {
+					this.#lastResponse = response;
 					console.debug(`Register response:`, response, textStatus, jqXHR);
 					if (jqXHR.status == 201){
 						// The OTP code was sent to the user's email
@@ -209,7 +219,6 @@ export class AuthManager {
 						res(true);
 						return;
 					}
-					this.#lastResponse = response;
 					this.#updateJwt(response.access, response.refresh);
 					this.startPollingAccessToken();
 					this.#showLogoutButton();

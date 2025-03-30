@@ -28,6 +28,12 @@ export class LoginController {
 	}
 
 	#bindEvents() {
+		$(`#confirm-otp-form`).on("submit", (e) => {
+			e.preventDefault();
+			this.#otpSubmit();
+		});
+
+
 		for (const field of this.#mandatoryFields) {
 			$(`#${field}`).on("input", () => {
 				$(`#${field}-help`).addClass(`d-none`);
@@ -40,6 +46,23 @@ export class LoginController {
 		});
 	};
 
+
+	async #otpSubmit(){
+		await window.tools.authManager.confirmOtp($(`#otp_code`).val());
+		if (!window.tools.authManager.isLoggedIn()) {
+			// TODO: show errors. Either a toast or below each field
+			if (window.tools.authManager.authErrors.detail) {
+				// TODO: show toast
+				console.warn("OTP confirmation failed:", window.tools.authManager.authErrors.detail);
+			} else {
+				console.warn("OTP confirmation failed:", window.tools.authManager.authErrors);
+				this.#showErrors(window.tools.authManager.authErrors);
+			}
+			return;
+		}
+		window.location.href = `#${CONFIG.routes.home.view}`;
+	}
+
 	async #loginSubmit(){
 		// TODO: add validation
 		const formData = {
@@ -48,6 +71,15 @@ export class LoginController {
 			otp_code: $(`#otp_code`).val(),
 		};
 		await window.tools.authManager.login(formData);
+
+
+		const otpRequired = window.tools.authManager.otpRequired;
+		if (otpRequired) {
+			// TODO: show otp code input
+			$(`#confirm-otp-modal`).removeClass(`visually-hidden`);
+			return;
+		}
+
 		if (!window.tools.authManager.isLoggedIn()) {
 			// TODO: show errors. Either a toast or below each field
 			if (window.tools.authManager.authErrors.detail) {
