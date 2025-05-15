@@ -286,7 +286,7 @@ export class AuthManager {
 	};
 
 	logout(redirect = true) {
-		this.user = null;
+		this.#user = null;
 		this.#updateJwt(null, null);
 		this.#otpRequired = false;
 		this.#otpRequiredUsername = null;

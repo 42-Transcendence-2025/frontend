@@ -1,15 +1,14 @@
 {
 	"typeAcquisition": {
 		"include": [
-			"jquery"
+			"jquery",
+			"bootstrap"
 		]
 	},
 	"buildOptions": {
 
 	},
 	"compilerOptions": {
-		"baseUrl": ".",
-		"paths": {
-		}
+		"baseUrl": "."
 	}
 }

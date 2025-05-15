@@ -6,10 +6,16 @@ import {RegisterController} from "./src/routes/controllers/registerCtrl.js";
 
 
 /**
- * @type {{
- *     authManager: AuthManager,
- * }}
+ * @typedef {Object} Tools
+ * @property {AuthManager} authManager
  */
+
+/** 
+ * @type {Window & { tools: Tools }}
+ * @global
+ */
+var window = window;
+
 window.tools = {};
 
 // TYPES
