@@ -83,3 +83,66 @@ body {
 	animation-duration: 5s;
 }
 /* ----------------------------------------------------------------------------- */
+
+@font-face
+{
+    font-family: 'pong-score';
+    src: url('fonts/pong-score.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* -------------------------------------------------------------------------- */
+/* General styles for the Pong AI game */
+#menu {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#menu h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+#menu button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+#menu button#easy {
+    background-color: #28a745;
+    color: #fff;
+}
+
+#menu button#medium {
+    background-color: #ffc107;
+    color: #fff;
+}
+
+#menu button#hard {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+#menu button#impossible {
+    background-color: #343a40;
+    color: #fff;
+}
+
+#gameContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: #000;
+}
+
+#gameCanvas {
+    border: 5px solid #fff;
+    border-radius: 10px;
+}

@@ -3,7 +3,7 @@ import {LoginController} from "./src/routes/controllers/loginCtrl.js";
 import {LandingPageController} from "./src/routes/controllers/landingPageCtrl.js";
 import {CasualGameController} from "./src/routes/controllers/casualGameCtrl.js";
 import {RegisterController} from "./src/routes/controllers/registerCtrl.js";
-
+import {PongAIController} from "./src/routes/controllers/pongAICtrl.js";
 
 /**
  * @typedef {Object} Tools
@@ -14,7 +14,7 @@ import {RegisterController} from "./src/routes/controllers/registerCtrl.js";
  * @type {Window & { tools: Tools }}
  * @global
  */
-var window = window;
+// var window = window;
 
 window.tools = {};
 
@@ -87,6 +87,11 @@ export const CONFIG = {
 		register: {
 			view: "register",
 			controller: RegisterController,
+		},
+		pongAI: {
+			view: "pongAI", // Nome del file HTML (senza estensione)
+			controller: PongAIController, // Controller associato
+			authRequired: false, // Imposta su `true` se l'accesso richiede autenticazione
 		},
 	},
 	// Default route if the hash is not found.
